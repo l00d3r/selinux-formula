@@ -41,7 +41,7 @@ selinux_boolean_{{ bool }}_disabled:
 {% for port in ports %}
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
-    run:
+    - run
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
     - require:
       - pkg: selinux
