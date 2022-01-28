@@ -41,17 +41,15 @@ selinux_boolean_{{ bool }}_disabled:
 {% for port in ports %}
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
-    - run
-    - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
-    - require:
-      - pkg: selinux
-    - unless: FOUND="no"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="yes"; fi; done; if [ "$FOUND" == "yes" ]; then /bin/true; else /bin/false; fi
-  cmd:
-    - run
-    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
-    - require:
-      - pkg: selinux
-    - unless: FOUND="yes"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="no"; fi; done; if [ "$FOUND" == "no" ]; then /bin/true; else /bin/false; fi
+    run:
+      name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
+      - require:
+        - pkg: selinux
+      - unless: FOUND="no"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="yes"; fi; done; if [ "$FOUND" == "yes" ]; then /bin/true; else /bin/false; fi
+      name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
+      - require:
+        - pkg: selinux
+      - unless: FOUND="yes"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="no"; fi; done; if [ "$FOUND" == "no" ]; then /bin/true; else /bin/false; fi
 {% endfor %}
 {% endfor %}
 {% endfor %}
