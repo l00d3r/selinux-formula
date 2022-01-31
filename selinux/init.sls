@@ -39,27 +39,20 @@ selinux_boolean_{{ bool }}_disabled:
 {% for application, config in salt['pillar.get']('selinux:ports', {}).items() %}
 {% for protocol, ports in config.items() %}
 {% for port in ports %}
+{% set selinux_port_exists = salt.cmd.run('/usr/sbin/semanage port -l | grep -q {{ port }}') == '1' %}
+{% set selinux_application_port_exists = salt.cmd.run('/usr/sbin/semanage port -l | grep {{ port }} | grep -q {{ application }}_port_t') == '1' %}
+
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
+{% if selinux_port_exists == 1 && selinux_application_port_exists == 0 %}}
+    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
+{% elif selinux_port_exists == 0 && selinux_application_port_exists == 0 %}}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
+{% endif %}}
     - require:
       - pkg: selinux
     - unless: FOUND="no"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="yes"; fi; done; if [ "$FOUND" == "yes" ]; then /bin/true; else /bin/false; fi
-{% endfor %}
-{% endfor %}
-{% endfor %}
-
-{% for application, config in salt['pillar.get']('selinux:ports', {}).items() %}
-{% for protocol, ports in config.items() %}
-{% for port in ports %}
-selinux_modify_{{ application }}_{{ protocol }}_port_{{ port }}:
-  cmd:
-    - run
-    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
-    - require:
-      - pkg: selinux
-    - unless: FOUND="yes"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="no"; fi; done; if [ "$FOUND" == "no" ]; then /bin/true; else /bin/false; fi
 {% endfor %}
 {% endfor %}
 {% endfor %}
