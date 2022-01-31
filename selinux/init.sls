@@ -44,11 +44,10 @@ selinux_boolean_{{ bool }}_disabled:
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
-{% if not selinux_application_port_exists %}
-
-    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists }}
+{% if selinux_port_exists and not selinux_application_port_exists %}
+    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% else %}
-    - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists }}
+    - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% endif %}
     - require:
       - pkg: selinux
