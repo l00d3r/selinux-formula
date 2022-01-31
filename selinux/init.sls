@@ -47,7 +47,7 @@ selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
 {% if selinux_port_exists is sameas true and selinux_application_port_exists is sameas false %}
     - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% else %}
-    - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists }} {{ selinux_application_port_exists }}
+    - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% endif %}
     - require:
       - pkg: selinux
