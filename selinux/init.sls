@@ -46,7 +46,7 @@ selinux_debug:
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
-{% if selinux_port_exists is True and selinux_application_port_exists is False %}
+{% if selinux_port_exists and not selinux_application_port_exists %}
     - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% else %}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
