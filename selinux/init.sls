@@ -44,7 +44,7 @@ selinux_boolean_{{ bool }}_disabled:
 selinux_debug:
   cmd:
     - run
-    - name: echo "{{ selinux_port_exists }}, {{ selinux_application_port_exists }}"
+    - name: echo "{{ selinux_port_exists }}_{{ selinux_application_port_exists }}"
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
