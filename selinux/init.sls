@@ -39,12 +39,13 @@ selinux_boolean_{{ bool }}_disabled:
 {% for application, config in salt['pillar.get']('selinux:ports', {}).items() %}
 {% for protocol, ports in config.items() %}
 {% for port in ports %}
-{% set selinux_port_exists = salt['cmd.shell']('/usr/sbin/semanage port -l | grep -q '~ port) %}
-{% set selinux_application_port_exists = salt['cmd.shell']('/usr/sbin/semanage port -l | grep '~ port ~' | grep -q '~ application ~'_port_t') %}
+{% set selinux_port_exists = salt['cmd.shell']('/usr/sbin/semanage port -l | grep -q ' ~ port ) %}
+{% set selinux_application_port_exists = salt['cmd.shell']('/usr/sbin/semanage port -l | grep ' ~ port ~ ' | grep -q ' ~ application ~ '_port_t') %}
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
-{% if selinux_port_exists %}
+{% if not selinux_application_port_exists %}
+
     - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists }}
 {% else %}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists }}
