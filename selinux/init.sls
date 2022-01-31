@@ -45,9 +45,9 @@ selinux_boolean_{{ bool }}_disabled:
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
-{% if selinux_port_exists == 1 && selinux_application_port_exists == 0 %}}
+{% if selinux_port_exists == 1 && selinux_application_port_exists == 0 %}
     - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
-{% elif selinux_port_exists == 0 && selinux_application_port_exists == 0 %}}
+{% elif selinux_port_exists == 0 && selinux_application_port_exists == 0 %}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% endif %}}
     - require:
