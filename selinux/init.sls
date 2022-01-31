@@ -39,24 +39,16 @@ selinux_boolean_{{ bool }}_disabled:
 {% for application, config in salt['pillar.get']('selinux:ports', {}).items() %}
 {% for protocol, ports in config.items() %}
 {% for port in ports %}
-{% set selinux_port_exists = salt.cmd.run('/usr/sbin/semanage port -l | grep -q {{ port }}') == '1' %}
-{% set selinux_application_port_exists = salt.cmd.run('/usr/sbin/semanage port -l | grep {{ port }} | grep -q {{ application }}_port_t') == '1' %}
-
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
-{% if selinux_port_exists == '1' and selinux_application_port_exists == '0' %}
-    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }}
-{% elif selinux_port_exists == '0' and selinux_application_port_exists == '0' %}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
-{% endif %}}
     - require:
       - pkg: selinux
     - unless: FOUND="no"; for i in $(/usr/sbin/semanage port -l | grep {{ application }}_port_t | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="yes"; fi; done; if [ "$FOUND" == "yes" ]; then /bin/true; else /bin/false; fi
 {% endfor %}
 {% endfor %}
 {% endfor %}
-
 {% for application, config in salt['pillar.get']('selinux:ports.absent', {}).items() %}
 {% for protocol, ports in config.items() %}
 {% for port in ports %}
@@ -70,7 +62,6 @@ selinux_{{ application }}_{{ protocol }}_port_{{ port }}_absent:
 {% endfor %}
 {% endfor %}
 {% endfor %}
-
 {% for file, config in salt['pillar.get']('selinux:fcontext', {}).items() %}
 {% set parameters = [] %}
 {% if 'type' in config %}
@@ -87,7 +78,6 @@ selinux_fcontext_{{ file }}:
     - require:
       - pkg: selinux
 {% endfor %}
-
 {% for file in salt['pillar.get']('selinux:fcontext.absent', {}) %}
 selinux_fcontext_{{ file }}_absent:
   cmd:
@@ -97,10 +87,8 @@ selinux_fcontext_{{ file }}_absent:
       - pkg: selinux
     - unless: if (/usr/sbin/semanage fcontext --list | grep -q "^{{ file }} "); then /bin/false; else /bin/true; fi
 {% endfor %}
-
 {% for k, v in salt['pillar.get']('selinux:modules', {}).items() %}
   {% set v_name = v.name|default(k) %}
-
 resetifmissing_{{ k }}:
   cmd:
     - run
@@ -108,7 +96,6 @@ resetifmissing_{{ k }}:
     - require:
       - pkg: selinux
     - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
-
 policy_{{ k }}:
   file:
     - managed
@@ -117,8 +104,6 @@ policy_{{ k }}:
     - group: root
     - mode: 600
     - contents_pillar: selinux:modules:{{ v_name }}:plain
-
-
 checkmodule_{{ k }}:
   cmd:
     - wait
@@ -129,7 +114,6 @@ checkmodule_{{ k }}:
       - file: /etc/selinux/src/{{ v_name }}.te
       - pkg: selinux
     - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
-
 create_package_{{ k }}:
   cmd:
     - wait
@@ -139,7 +123,6 @@ create_package_{{ k }}:
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
     - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
-
 install_semodule_{{ k }}:
   cmd:
     - wait
@@ -149,9 +132,7 @@ install_semodule_{{ k }}:
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
     - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
-
 {% endfor %}
-
 selinux-config:
   file:
     - managed
@@ -161,9 +142,7 @@ selinux-config:
     - mode: 600
     - source: salt://selinux/files/config
     - template: jinja
-
 selinux-state:
   selinux.mode:
   - name: {{ selinux.state|default('enforcing') }}
-
 {% endif %}
