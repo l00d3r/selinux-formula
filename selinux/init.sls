@@ -52,7 +52,7 @@ selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
 {% endif %}}
     - require:
       - pkg: selinux
-    - unless: FOUND="no"; for i in $(/usr/sbin/semanage port -l | grep {{ port }} | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="yes"; fi; done; if [ "$FOUND" == "yes" ]; then /bin/true; else /bin/false; fi
+    - unless: FOUND="no"; for i in $(/usr/sbin/semanage port -l | grep {{ application }}_port_t | tr -s ' ' | cut -d ' ' -f 3- | tr -d ','); do if [ "$i" == "{{ port }}" ]; then FOUND="yes"; fi; done; if [ "$FOUND" == "yes" ]; then /bin/true; else /bin/false; fi
 {% endfor %}
 {% endfor %}
 {% endfor %}
