@@ -45,7 +45,7 @@ selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
 {% if selinux_port_exists|to_bool == true %}
-    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists|to_str }}
+    - name: /usr/sbin/semanage port -m -t {{ application }}_port_t -p {{ protocol }} {{ port }} {{ selinux_port_exists }}
 {% else %}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% endif %}
