@@ -50,6 +50,8 @@ selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% elif selinux_port_exists == 1 and selinux_application_port_exists == 0 %}
     - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
+{% elif selinux_port_exists == 0 and selinux_application_port_exists == 0 %}
+    - name: /usr/sbin/semanage port -a -t {{ application }}_port_t -p {{ protocol }} {{ port }}
 {% endif %}
     - require:
       - pkg: selinux
