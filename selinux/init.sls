@@ -41,6 +41,8 @@ selinux_boolean_{{ bool }}_disabled:
 {% for port in ports %}
 {% set selinux_port_exists = salt.cmd.run('/usr/sbin/semanage port -l | grep -q {{ port }}') %}
 {% set selinux_application_port_exists = salt.cmd.run('/usr/sbin/semanage port -l | grep {{ port }} | grep -q {{ application }}_port_t') %}
+selinux_debug:
+  cmd.run: echo "{{ selinux_port_exists }}, {{ selinux_application_port_exists }}"
 selinux_{{ application }}_{{ protocol }}_port_{{ port }}:
   cmd:
     - run
